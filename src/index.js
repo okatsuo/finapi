@@ -2,4 +2,5 @@ const express = require('express')
 
 const app = express()
 
-app.listen(3333)
+const port = 3333
+app.listen(port, () => console.log(`Server running at: http://localhost:${port}`))

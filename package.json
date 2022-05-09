@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "okatsuo <rafael.goncanna@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
   "dependencies": {
     "express": "^4.18.1"
   },
