@@ -1,6 +1,5 @@
 const express = require('express')
 const { randomUUID } = require('crypto')
-const { response } = require('express')
 
 const app = express()
 app.use(express.json())
@@ -119,6 +118,18 @@ app.put('/account', verifyIfExistsAccountCPF, (request, response) => {
 app.get('/account', verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request
   return responseOk({ response, data: customer })
+})
+
+app.delete('/account', verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request
+  const removedCustomer = customers.splice(customer, 1)
+  return responseOk({ response, data: removedCustomer[0] })
+})
+
+app.get('/balance', verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request
+  const balance = getBalance(customer.statement)
+  return responseOk({ response, data: balance })
 })
 
 const port = 3333

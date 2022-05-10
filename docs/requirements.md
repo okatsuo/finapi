@@ -15,7 +15,9 @@
   
 [X] Deve ser possível obter dados da conta do cliente
   
-[] Deve ser possível deletar uma conta
+[X] Deve ser possível deletar uma conta
+
+[X] Deve ser possível retornar o balance
 
 <hr>
 
@@ -30,4 +32,6 @@
 
 [X] Não deve ser possível fazer saque em uma conta não existente
 
-[] Não deve ser possível excluir uma conta não existente
+[X] Não deve ser possível excluir uma conta não existente
+
+[X] Não deve ser possível consultar o balance em uma conta não existente
