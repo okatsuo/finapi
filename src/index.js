@@ -50,6 +50,7 @@ app.post('/account', (request, response) => {
 
 app.get('/statement', verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request
+  console.log('tá vindo aqui ?')
   return responseOk({ response, data: customer.statement })
 })
 
@@ -94,6 +95,30 @@ app.post('/withdraw', verifyIfExistsAccountCPF, (request, response) => {
   customer.statement.push(statementOperation)
 
   return responseCreated({ response })
+})
+
+app.get('/statement/date', verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request
+  const { date } = request.query
+  console.log(`date: ${date}`)
+  const dateFormat = new Date(date)
+  console.log(`formated date:`, dateFormat)
+  const statement = customer.statement.filter((statement) => statement.created_at.toDateString() === new Date(dateFormat).toDateString())
+  console.log(`statement:`, statement)
+  return responseOk({ response, data: statement })
+})
+
+app.put('/account', verifyIfExistsAccountCPF, (request, response) => {
+  const { name } = request.body
+  const { customer } = request
+
+  customer.name = name
+  return responseCreated({ response, data: customer })
+})
+
+app.get('/account', verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request
+  return responseOk({ response, data: customer })
 })
 
 const port = 3333
