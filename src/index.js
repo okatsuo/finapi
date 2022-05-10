@@ -29,19 +29,13 @@ const getBalance = (statement) => {
       return acc - operation.amount
     }
   }, 0)
-
   return balance
 }
 
 app.post('/account', (request, response) => {
   const { cpf, name } = request.body
-
   const customerAlreadyExists = customers.some((customer) => customer.cpf === cpf)
-
-  if (customerAlreadyExists) {
-    return responseBadRequest({ response, message: 'Customer already exists!' })
-  }
-
+  if (customerAlreadyExists) return responseBadRequest({ response, message: 'Customer already exists!' })
   const newCustomer = { id: randomUUID(), name, cpf, statement: [] }
   customers.push(newCustomer)
   return responseCreated({ response, data: newCustomer })
@@ -49,26 +43,19 @@ app.post('/account', (request, response) => {
 
 app.get('/statement', verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request
-  console.log('tá vindo aqui ?')
   return responseOk({ response, data: customer.statement })
 })
 
 app.post('/deposit', verifyIfExistsAccountCPF, (request, response) => {
   const { description, amount } = request.body
-
-  if (!amount) {
-    return responseBadRequest({ response, message: 'amount field is required.' })
-  }
-
+  if (!amount) return responseBadRequest({ response, message: 'amount field is required.' })
   const { customer } = request
-
   const statementOperation = {
     description: description ?? null,
     amount,
     created_at: new Date(),
     type: "credit"
   }
-
   customer.statement.push(statementOperation)
   return responseCreated({ response })
 })
@@ -76,11 +63,8 @@ app.post('/deposit', verifyIfExistsAccountCPF, (request, response) => {
 app.post('/withdraw', verifyIfExistsAccountCPF, (request, response) => {
   const { amount } = request.body
   const { customer } = request
-
   if (!amount) return responseBadRequest({ response, message: 'amount field is required.' })
-
   const balance = getBalance(customer.statement)
-
   if (balance < amount) {
     return responseBadRequest({ response, message: 'Insufficient funds!' })
   }
@@ -92,18 +76,14 @@ app.post('/withdraw', verifyIfExistsAccountCPF, (request, response) => {
   }
 
   customer.statement.push(statementOperation)
-
   return responseCreated({ response })
 })
 
 app.get('/statement/date', verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request
   const { date } = request.query
-  console.log(`date: ${date}`)
   const dateFormat = new Date(date)
-  console.log(`formated date:`, dateFormat)
   const statement = customer.statement.filter((statement) => statement.created_at.toDateString() === new Date(dateFormat).toDateString())
-  console.log(`statement:`, statement)
   return responseOk({ response, data: statement })
 })
 
