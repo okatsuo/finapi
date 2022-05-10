@@ -17,9 +17,21 @@ const responseBadRequest = ({ response, message } = {}) => response.status(400).
 const verifyIfExistsAccountCPF = (request, response, next) => {
   const { cpf } = request.headers
   const customer = customers.find(customer => customer.cpf === cpf)
-  if (!customer) return response.status(400).json({ error: { message: 'Customer not found...' } })
+  if (!customer) return response.status(404).json({ error: { message: "You don't have permission to be here!" } })
   request.customer = customer
   return next()
+}
+
+const getBalance = (statement) => {
+  const balance = statement.reduce((acc, operation) => {
+    if (operation.type === 'credit') {
+      return acc + operation.amount
+    } else {
+      return acc - operation.amount
+    }
+  }, 0)
+
+  return balance
 }
 
 app.post('/account', (request, response) => {
@@ -58,6 +70,29 @@ app.post('/deposit', verifyIfExistsAccountCPF, (request, response) => {
   }
 
   customer.statement.push(statementOperation)
+  return responseCreated({ response })
+})
+
+app.post('/withdraw', verifyIfExistsAccountCPF, (request, response) => {
+  const { amount } = request.body
+  const { customer } = request
+
+  if (!amount) return responseBadRequest({ response, message: 'amount field is required.' })
+
+  const balance = getBalance(customer.statement)
+
+  if (balance < amount) {
+    return responseBadRequest({ response, message: 'Insufficient funds!' })
+  }
+
+  const statementOperation = {
+    amount,
+    created_at: new Date(),
+    type: "debit"
+  }
+
+  customer.statement.push(statementOperation)
+
   return responseCreated({ response })
 })
 
