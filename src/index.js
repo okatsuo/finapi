@@ -1,10 +1,18 @@
 const express = require('express')
 const { randomUUID } = require('crypto')
+const { response } = require('express')
 
 const app = express()
 app.use(express.json())
 
 const customers = []
+
+const responseOk = ({ response, data } = {}) => response.json({ data: data })
+const responseCreated = ({ response, data } = {}) => {
+  if (!data) return response.status(201).send()
+  return response.status(201).json({ data: data })
+}
+const responseBadRequest = ({ response, message } = {}) => response.status(400).json({ error: { message } })
 
 const verifyIfExistsAccountCPF = (request, response, next) => {
   const { cpf } = request.headers
@@ -20,17 +28,37 @@ app.post('/account', (request, response) => {
   const customerAlreadyExists = customers.some((customer) => customer.cpf === cpf)
 
   if (customerAlreadyExists) {
-    return response.status(400).json({ error: { message: 'Customer already exists!' } })
+    return responseBadRequest({ response, message: 'Customer already exists!' })
   }
 
   const newCustomer = { id: randomUUID(), name, cpf, statement: [] }
   customers.push(newCustomer)
-  return response.status(201).json({ data: newCustomer })
+  return responseCreated({ response, data: newCustomer })
 })
 
 app.get('/statement', verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request
-  return response.json({ data: customer.statement })
+  return responseOk({ response, data: customer.statement })
+})
+
+app.post('/deposit', verifyIfExistsAccountCPF, (request, response) => {
+  const { description, amount } = request.body
+
+  if (!amount) {
+    return responseBadRequest({ response, message: 'amount field is required.' })
+  }
+
+  const { customer } = request
+
+  const statementOperation = {
+    description: description ?? null,
+    amount,
+    created_at: new Date(),
+    type: "credit"
+  }
+
+  customer.statement.push(statementOperation)
+  return responseCreated({ response })
 })
 
 const port = 3333
