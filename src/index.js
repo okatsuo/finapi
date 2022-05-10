@@ -20,5 +20,17 @@ app.post('/account', (request, response) => {
   return response.status(201).json({ data: newCustomer })
 })
 
+app.get('/statement', (request, response) => {
+  const { cpf } = request.headers
+
+  const customer = customers.find(customer => customer.cpf === cpf)
+
+  if (!customer) {
+    return response.status(400).json({ error: { message: 'Customer not found...' } })
+  }
+
+  return response.json({ data: customer.statement })
+})
+
 const port = 3333
 app.listen(port, () => console.log(`Server running at: http://localhost:${port}`))
